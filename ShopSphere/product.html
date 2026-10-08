@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details - ShopSphere</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="logo">
+        <span>🛍️</span> ShopSphere
+      </a>
+      
+      <div class="nav-right">
+        <form id="search-form" class="search-form" style="margin-right: 2rem;">
+          <input type="text" id="search-input" placeholder="Search products..." 
+            style="padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius); width: 250px;">
+        </form>
+
+        <div id="auth-nav" class="nav-right" style="margin: 0;">
+          <a href="login.html" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Login</a>
+          <a href="register.html" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Register</a>
+        </div>
+
+        <div id="user-nav" style="display: none; align-items: center; gap: 1rem;">
+          <span style="color: var(--text-color);">👤 <span id="user-name">User</span></span>
+          <button onclick="Auth.logout()" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Logout</button>
+        </div>
+
+        <a href="cart.html" class="cart-icon">
+          🛒
+          <span id="cart-badge"></span>
+        </a>
+      </div>
+
+      <button class="menu-toggle" id="menu-toggle">☰</button>
+    </div>
+
+    <ul class="nav-menu" id="nav-menu">
+      <li><a href="index.html" class="nav-link">Home</a></li>
+      <li><a href="products.html" class="nav-link">Products</a></li>
+      <li><a href="cart.html" class="nav-link">Cart</a></li>
+      <li><a href="orders.html" class="nav-link">Orders</a></li>
+    </ul>
+  </nav>
+
+  <!-- Breadcrumb -->
+  <div class="container" style="padding: 1rem 0; font-size: 0.875rem; color: var(--text-light);">
+    <a href="index.html" style="color: var(--primary-color);">Home</a>
+    <span> / </span>
+    <a href="products.html" style="color: var(--primary-color);">Products</a>
+    <span> / </span>
+    <span id="product-name">Product</span>
+  </div>
+
+  <!-- Product Details -->
+  <div class="container">
+    <section class="product-details-section">
+      <div id="product-details">
+        <!-- Loaded dynamically -->
+      </div>
+    </section>
+  </div>
+
+  <!-- Related Products Section -->
+  <section style="background-color: var(--bg-color); padding: 3rem 0; margin-top: 3rem;">
+    <div class="container">
+      <h2 style="margin-bottom: 2rem;">You May Also Like</h2>
+      <div id="related-products" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 2rem;">
+        <!-- Loaded dynamically -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2024 ShopSphere. All rights reserved. | A Modern E-Commerce Platform</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/products.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    // Load related products
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const productId = parseInt(urlParams.get('id'));
+
+      if (productId && window.currentProduct) {
+        try {
+          const allProducts = await API.getProducts();
+          const related = allProducts
+            .filter(p => p.id !== productId && p.category === window.currentProduct.category)
+            .slice(0, 4);
+
+          const container = document.getElementById('related-products');
+          container.innerHTML = related.map(product => `
+            <div class="product-card">
+              <div class="product-image">
+                <img src="${product.image}" alt="${product.name}" loading="lazy">
+                <div class="product-badge">${product.stock > 0 ? 'In Stock' : 'Out of Stock'}</div>
+              </div>
+              <div class="product-info">
+                <h3>${product.name}</h3>
+                <div class="product-rating">
+                  <span class="stars">★★★★☆</span>
+                  <span class="rating-value">${product.rating}</span>
+                </div>
+                <p class="product-description">${product.description.substring(0, 60)}...</p>
+                <div class="product-footer">
+                  <span class="price">$${product.price.toFixed(2)}</span>
+                  <div class="product-actions">
+                    <a href="product.html?id=${product.id}" class="btn btn-small btn-outline">View</a>
+                    <button class="btn btn-small btn-primary" onclick="ProductsPage.quickAdd(${product.id})">
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        } catch (error) {
+          console.error('Error loading related products:', error);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
